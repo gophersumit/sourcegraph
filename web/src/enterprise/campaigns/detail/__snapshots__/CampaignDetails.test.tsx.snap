@@ -504,7 +504,7 @@ Array [
         "createdAt": "2020-01-01",
         "description": "d",
         "diffStat": Object {
-          "__typename": "IDiffStat",
+          "__typename": "DiffStat",
           "added": 5,
           "changed": 3,
           "deleted": 2,
@@ -613,7 +613,7 @@ Array [
         "createdAt": "2020-01-01",
         "description": "d",
         "diffStat": Object {
-          "__typename": "IDiffStat",
+          "__typename": "DiffStat",
           "added": 5,
           "changed": 3,
           "deleted": 2,
@@ -885,7 +885,7 @@ Array [
         "createdAt": "2020-01-01",
         "description": "d",
         "diffStat": Object {
-          "__typename": "IDiffStat",
+          "__typename": "DiffStat",
           "added": 5,
           "changed": 3,
           "deleted": 2,
@@ -994,7 +994,7 @@ Array [
         "createdAt": "2020-01-01",
         "description": "d",
         "diffStat": Object {
-          "__typename": "IDiffStat",
+          "__typename": "DiffStat",
           "added": 5,
           "changed": 3,
           "deleted": 2,
@@ -1356,7 +1356,7 @@ Array [
         "createdAt": "2020-01-01",
         "description": "d",
         "diffStat": Object {
-          "__typename": "IDiffStat",
+          "__typename": "DiffStat",
           "added": 5,
           "changed": 3,
           "deleted": 2,
@@ -1465,7 +1465,7 @@ Array [
         "createdAt": "2020-01-01",
         "description": "d",
         "diffStat": Object {
-          "__typename": "IDiffStat",
+          "__typename": "DiffStat",
           "added": 5,
           "changed": 3,
           "deleted": 2,
