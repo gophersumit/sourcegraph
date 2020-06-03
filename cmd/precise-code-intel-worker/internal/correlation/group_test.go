@@ -330,6 +330,8 @@ func TestConvert(t *testing.T) {
 
 func normalizeGroupedBundleData(groupedBundleData *GroupedBundleData) {
 	for _, document := range groupedBundleData.Documents {
+		sortDiagnostics(document.Diagnostics)
+
 		for _, r := range document.Ranges {
 			sortMonikerIDs(r.MonikerIDs)
 		}
@@ -348,6 +350,12 @@ func normalizeGroupedBundleData(groupedBundleData *GroupedBundleData) {
 func sortMonikerIDs(s []types.ID) {
 	sort.Slice(s, func(i, j int) bool {
 		return strings.Compare(string(s[i]), string(s[j])) < 0
+	})
+}
+
+func sortDiagnostics(s []types.DiagnosticData) {
+	sort.Slice(s, func(i, j int) bool {
+		return strings.Compare(s[i].Message, s[j].Message) < 0
 	})
 }
 
