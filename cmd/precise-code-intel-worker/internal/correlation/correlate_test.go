@@ -120,7 +120,7 @@ func TestCorrelate(t *testing.T) {
 			"23": {Name: "pkg B", Version: "v1.2.3"},
 		},
 		Diagnostics: map[string]lsif.DiagnosticResult{
-			"49": lsif.DiagnosticResult{
+			"49": {
 				Result: []lsif.Diagnostic{
 					{
 						Severity:       1,
