@@ -30,6 +30,9 @@ type Database interface {
 	// Hover returns the hover text of the symbol at the given position.
 	Hover(ctx context.Context, path string, line, character int) (string, Range, bool, error)
 
+	// TODO(efritz) - document
+	Diagnostics(ctx context.Context, path string) ([]Diagnostic, error)
+
 	// MonikersByPosition returns all monikers attached ranges containing the given position. If multiple
 	// ranges contain the position, then this method will return multiple sets of monikers. Each slice
 	// of monikers are attached to a single range. The order of the output slice is "outside-in", so that
@@ -54,6 +57,8 @@ type databaseImpl struct {
 
 var _ Database = &databaseImpl{}
 
+// TODO(efritz) - unify these types with bundle manager client types
+
 type Location struct {
 	Path  string `json:"path"`
 	Range Range  `json:"range"`
@@ -67,6 +72,17 @@ type Range struct {
 type Position struct {
 	Line      int `json:"line"`
 	Character int `json:"character"`
+}
+
+type Diagnostic struct {
+	Severity       int    `json:"severity"`
+	Code           string `json:"code"`
+	Message        string `json:"message"`
+	Source         string `json:"source"`
+	StartLine      int    `json:"startLine"`
+	StartCharacter int    `json:"startCharacter"`
+	EndLine        int    `json:"endLine"`
+	EndCharacter   int    `json:"endCharacter"`
 }
 
 func newRange(startLine, startCharacter, endLine, endCharacter int) Range {
@@ -214,6 +230,36 @@ func (db *databaseImpl) Hover(ctx context.Context, path string, line, character 
 	return "", Range{}, false, nil
 }
 
+// TODO(efritz) - document
+func (db *databaseImpl) Diagnostics(ctx context.Context, path string) ([]Diagnostic, error) {
+	// TODO - if path is empty, do for all documents
+
+	documentData, exists, err := db.getDocumentData(ctx, path)
+	if err != nil {
+		return nil, pkgerrors.Wrap(err, "db.getDocumentData")
+	}
+	fmt.Printf("DOCUMENT DATA: %v\n", documentData)
+	if !exists {
+		return nil, nil
+	}
+
+	var diagnostics []Diagnostic
+	for _, diagnostic := range documentData.Diagnostics {
+		diagnostics = append(diagnostics, Diagnostic{
+			Severity:       diagnostic.Severity,
+			Code:           diagnostic.Code,
+			Message:        diagnostic.Message,
+			Source:         diagnostic.Source,
+			StartLine:      diagnostic.StartLine,
+			StartCharacter: diagnostic.StartCharacter,
+			EndLine:        diagnostic.EndLine,
+			EndCharacter:   diagnostic.EndCharacter,
+		})
+	}
+
+	return diagnostics, nil
+}
+
 // MonikersByPosition returns all monikers attached ranges containing the given position. If multiple
 // ranges contain the position, then this method will return multiple sets of monikers. Each slice
 // of monikers are attached to a single range. The order of the output slice is "outside-in", so that
@@ -285,7 +331,6 @@ func (db *databaseImpl) PackageInformation(ctx context.Context, path string, pac
 	if err != nil {
 		return types.PackageInformationData{}, false, pkgerrors.Wrap(err, "db.getDocumentData")
 	}
-
 	if !exists {
 		return types.PackageInformationData{}, false, nil
 	}
@@ -341,7 +386,6 @@ func (db *databaseImpl) getRangeByPosition(ctx context.Context, path string, lin
 	if err != nil {
 		return types.DocumentData{}, nil, false, pkgerrors.Wrap(err, "db.getDocumentData")
 	}
-
 	if !exists {
 		return types.DocumentData{}, nil, false, nil
 	}
@@ -356,7 +400,6 @@ func (db *databaseImpl) getResultByID(ctx context.Context, id types.ID) ([]docum
 	if err != nil {
 		return nil, pkgerrors.Wrap(err, "db.getResultChunkByResultID")
 	}
-
 	if !exists {
 		return nil, ErrMalformedBundle{
 			Filename: db.filename,

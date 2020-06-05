@@ -26,6 +26,9 @@ type CodeIntelAPI interface {
 
 	// Hover returns the hover text and range for the symbol at the given position.
 	Hover(ctx context.Context, file string, line, character, uploadID int) (string, bundles.Range, bool, error)
+
+	// TODO(efritz) - document
+	Diagnostics(ctx context.Context, file string, uploadID int) ([]bundles.Diagnostic, error)
 }
 
 type codeIntelAPI struct {

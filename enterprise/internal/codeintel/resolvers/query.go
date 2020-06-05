@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/sourcegraph/go-lsp"
 	"github.com/sourcegraph/sourcegraph/cmd/frontend/graphqlbackend"
@@ -27,7 +28,15 @@ type lsifQueryResolver struct {
 	uploads []db.Dump
 }
 
-var _ graphqlbackend.LSIFQueryResolver = &lsifQueryResolver{}
+var _ graphqlbackend.GitBlobLSIFDataResolver = &lsifQueryResolver{}
+
+func (r *lsifQueryResolver) ToGitTreeLSIFData() (graphqlbackend.GitTreeLSIFDataResolver, bool) {
+	return r, true
+}
+
+func (r *lsifQueryResolver) ToGitBlobLSIFData() (graphqlbackend.GitBlobLSIFDataResolver, bool) {
+	return r, true
+}
 
 func (r *lsifQueryResolver) Definitions(ctx context.Context, args *graphqlbackend.LSIFQueryPositionArgs) (graphqlbackend.LocationConnectionResolver, error) {
 	for _, upload := range r.uploads {
@@ -179,6 +188,25 @@ func (r *lsifQueryResolver) Hover(ctx context.Context, args *graphqlbackend.LSIF
 	}
 
 	return nil, nil
+}
+
+func (r *lsifQueryResolver) Diagnostics(ctx context.Context, args *graphqlbackend.LSIFDiagnosticsArgs) (graphqlbackend.DiagnosticConnectionResolver, error) {
+	for _, upload := range r.uploads {
+		diagnostics, err := r.codeIntelAPI.Diagnostics(
+			ctx,
+			r.path,
+			upload.ID,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// TODO - need to translate ranges back
+		fmt.Printf("Diagnostics: %v\n", diagnostics)
+	}
+
+	// TODO(efritz) - implement
+	return nil, fmt.Errorf("Y unimplemented")
 }
 
 // adjustPosition adjusts the position denoted by `line` and `character` in the requested commit into an

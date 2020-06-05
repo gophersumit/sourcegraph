@@ -2167,6 +2167,43 @@ type Position {
     character: Int!
 }
 
+type DiagnosticConnection {
+    # A list of diagnostics.
+    nodes: [Diagnostic!]!
+
+    # The total count of diagnostics (which may be larger than nodes.length if the connection is paginated).
+    totalCount: Int!
+
+    # Pagination information.
+    pageInfo: PageInfo!
+}
+
+# Represents a diagnostic, such as a compiler error or warning.
+type Diagnostic {
+    # The location at which the message applies.
+    location: Location!
+
+    # The diagnostic's severity.
+    severity: DiagnosticSeverity
+
+    # The diagnostic's code as provided by the tool.
+    code: String
+
+    # A human-readable string describing the source of this
+    # diagnostic, e.g. "typescript" or "super lint".
+    source: String
+
+    # The diagnostic's message.
+    message: String
+}
+
+enum DiagnosticSeverity {
+    ERROR
+    WARNING
+    INFORMATION
+    HINT
+}
+
 # All possible kinds of symbols. This set matches that of the Language Server Protocol
 # (https://microsoft.github.io/language-server-protocol/specification#workspace_symbol).
 enum SymbolKind {
@@ -2498,6 +2535,15 @@ interface TreeEntry {
         # Recurse into sub-trees of single-child directories
         recursiveSingleChild: Boolean = false
     ): Boolean!
+
+    # (experimental) The LSIF API may change substantially in the near future as we
+    # continue to adjust it for our use cases. Changes will not be documented in the
+    # CHANGELOG during this time.
+    # LSIF data for this tree entry.
+    lsif(
+        # An optional filter for the tool name provided in the meta data vertex.
+        toolName: String
+    ): TreeEntryLSIFData
 }
 
 # A Git tree in a repository.
@@ -2566,6 +2612,15 @@ type GitTree implements TreeEntry {
         # Recurse into sub-trees of single-child directories
         recursiveSingleChild: Boolean = false
     ): Boolean!
+
+    # (experimental) The LSIF API may change substantially in the near future as we
+    # continue to adjust it for our use cases. Changes will not be documented in the
+    # CHANGELOG during this time.
+    # LSIF data for this tree entry.
+    lsif(
+        # An optional filter for the tool name provided in the meta data vertex.
+        toolName: String
+    ): TreeEntryLSIFData
 }
 
 # A file.
@@ -2721,12 +2776,21 @@ type GitBlob implements TreeEntry & File2 {
     # CHANGELOG during this time.
     # A wrapper around LSIF query methods. If no LSIF upload can be used to answer code
     # intelligence queries for this path-at-revision, this resolves to null.
-    lsif: LSIFQueryResolver
+    lsif(
+        # An optional filter for the tool name provided in the meta data vertex.
+        toolName: String
+    ): GitBlobLSIFData
+}
+
+# LSIF data available for a tree entry.
+interface TreeEntryLSIFData {
+    # Code diagnostics provided through LSIF.
+    diagnostics(first: Int): DiagnosticConnection!
 }
 
 # A wrapper object around LSIF query methods for a particular path-at-revision. When this node is
 # null, no LSIF data is available for containing git blob.
-type LSIFQueryResolver {
+type GitBlobLSIFData implements TreeEntryLSIFData {
     # (experimental) The LSIF API may change substantially in the near future as we
     # continue to adjust it for our use cases. Changes will not be documented in the
     # CHANGELOG during this time.
@@ -2774,6 +2838,12 @@ type LSIFQueryResolver {
         # The character (not byte) of the start line on which the symbol occurs (zero-based, inclusive).
         character: Int!
     ): Hover
+
+    # (experimental) The LSIF API may change substantially in the near future as we
+    # continue to adjust it for our use cases. Changes will not be documented in the
+    # CHANGELOG during this time.
+    # Code diagnostics provided through LSIF.
+    diagnostics(first: Int): DiagnosticConnection!
 }
 
 # A highlighted file.

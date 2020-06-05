@@ -24,11 +24,23 @@ type MonikerData struct {
 	Kind                 string `json:"kind"`
 	Scheme               string `json:"scheme"`
 	Identifier           string `json:"identifier"`
-	PackageInformationID string `json:"packageInformationID"`
+	PackageInformationID string `json:"packageInformationId"`
 }
 
 // PackageInformationData describes a package within a package manager system.
 type PackageInformationData struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
+}
+
+// TODO(efritz) - document
+type Diagnostic struct {
+	Severity       int    `json:"severity"`
+	Code           string `json:"code"`
+	Message        string `json:"message"`
+	Source         string `json:"source"`
+	StartLine      int    `json:"startLine"`
+	StartCharacter int    `json:"startCharacter"`
+	EndLine        int    `json:"endLine"`
+	EndCharacter   int    `json:"endCharacter"`
 }

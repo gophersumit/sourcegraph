@@ -291,9 +291,21 @@ func (r *GitTreeEntryResolver) IsSingleChild(ctx context.Context, args *gitTreeE
 	return len(entries) == 1, nil
 }
 
-func (r *GitTreeEntryResolver) LSIF(ctx context.Context) (LSIFQueryResolver, error) {
+func (r *GitTreeEntryResolver) LSIF(ctx context.Context, args *struct{ ToolName *string }) (GitBlobLSIFDataResolver, error) {
 	codeIntelRequests.WithLabelValues(trace.RequestOrigin(ctx)).Inc()
-	return EnterpriseResolvers.codeIntelResolver.LSIF(ctx, &LSIFQueryArgs{
+
+	if r.stat.IsDir() {
+		// TODO(efritz) - implement
+		return nil, fmt.Errorf("X unimplemented")
+	}
+
+	var toolName string
+	if args.ToolName != nil {
+		toolName = *args.ToolName
+	}
+
+	return EnterpriseResolvers.codeIntelResolver.GitBlobLSIFData(ctx, &GitBlobLSIFDataArgs{
+		ToolName:   toolName,
 		Repository: r.Repository(),
 		Commit:     api.CommitID(r.Commit().OID()),
 		Path:       r.Path(),
