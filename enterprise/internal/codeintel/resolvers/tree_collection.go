@@ -2,12 +2,14 @@ package resolvers
 
 import (
 	"context"
+	"sync"
 
 	"github.com/sourcegraph/sourcegraph/cmd/frontend/graphqlbackend"
 	"github.com/sourcegraph/sourcegraph/internal/api"
 )
 
 type repositoryCollectionResolver struct {
+	m                         sync.Mutex
 	commitCollectionResolvers map[api.RepoID]*commitCollectionResolver
 }
 
@@ -30,6 +32,10 @@ func (r *repositoryCollectionResolver) resolve(ctx context.Context, repoID api.R
 
 // resolveRepository returns a commitCollectionResolver with the given resolved repository.
 func (r *repositoryCollectionResolver) resolveRepository(ctx context.Context, repoID api.RepoID) (*commitCollectionResolver, error) {
+	// TODO(efritz) - RW double lock
+	r.m.Lock()
+	defer r.m.Unlock()
+
 	if payload, ok := r.commitCollectionResolvers[repoID]; ok {
 		return payload, nil
 	}
@@ -49,12 +55,18 @@ func (r *repositoryCollectionResolver) resolveRepository(ctx context.Context, re
 }
 
 type commitCollectionResolver struct {
-	repositoryResolver      *graphqlbackend.RepositoryResolver
+	repositoryResolver *graphqlbackend.RepositoryResolver
+
+	m                       sync.Mutex
 	pathCollectionResolvers map[string]*pathCollectionResolver
 }
 
 // resolveCommit returns a pathCollectionResolver with the given resolved commit.
 func (r *commitCollectionResolver) resolveCommit(ctx context.Context, commit string) (*pathCollectionResolver, error) {
+	// TODO(efritz) - RW double lock
+	r.m.Lock()
+	defer r.m.Unlock()
+
 	if resolver, ok := r.pathCollectionResolvers[commit]; ok {
 		return resolver, nil
 	}
@@ -75,12 +87,18 @@ func (r *commitCollectionResolver) resolveCommit(ctx context.Context, commit str
 
 type pathCollectionResolver struct {
 	commitResolver *graphqlbackend.GitCommitResolver
-	pathResolvers  map[string]*graphqlbackend.GitTreeEntryResolver
+
+	m             sync.Mutex
+	pathResolvers map[string]*graphqlbackend.GitTreeEntryResolver
 }
 
 // pathCollectionResolver returns a GitTreeEntryResolver with the given path. If the
 // commit resolver could not be constructed, a nil resolver is returned.
 func (r *pathCollectionResolver) resolvePath(ctx context.Context, path string) (*graphqlbackend.GitTreeEntryResolver, error) {
+	// TODO(efritz) - RW double lock
+	r.m.Lock()
+	defer r.m.Unlock()
+
 	if resolver, ok := r.pathResolvers[path]; ok {
 		return resolver, nil
 	}

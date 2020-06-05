@@ -75,6 +75,7 @@ type Position struct {
 }
 
 type Diagnostic struct {
+	Path           string `json:"path"`
 	Severity       int    `json:"severity"`
 	Code           string `json:"code"`
 	Message        string `json:"message"`
@@ -232,13 +233,12 @@ func (db *databaseImpl) Hover(ctx context.Context, path string, line, character 
 
 // TODO(efritz) - document
 func (db *databaseImpl) Diagnostics(ctx context.Context, path string) ([]Diagnostic, error) {
-	// TODO - if path is empty, do for all documents
+	// TODO(efritz) - if path is empty, do for all documents in dump
 
 	documentData, exists, err := db.getDocumentData(ctx, path)
 	if err != nil {
 		return nil, pkgerrors.Wrap(err, "db.getDocumentData")
 	}
-	fmt.Printf("DOCUMENT DATA: %v\n", documentData)
 	if !exists {
 		return nil, nil
 	}
@@ -246,6 +246,7 @@ func (db *databaseImpl) Diagnostics(ctx context.Context, path string) ([]Diagnos
 	var diagnostics []Diagnostic
 	for _, diagnostic := range documentData.Diagnostics {
 		diagnostics = append(diagnostics, Diagnostic{
+			Path:           path,
 			Severity:       diagnostic.Severity,
 			Code:           diagnostic.Code,
 			Message:        diagnostic.Message,

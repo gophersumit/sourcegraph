@@ -200,10 +200,8 @@ func (s *Server) handleHover(w http.ResponseWriter, r *http.Request) {
 
 // GET /dbs/{id:[0-9]+}/diagnostics
 func (s *Server) handleDiagnostics(w http.ResponseWriter, r *http.Request) {
-	log15.Warn(fmt.Sprintf("IN HANDLER with path %s\n", getQuery(r, "path")))
 	s.dbQuery(w, r, func(ctx context.Context, db database.Database) (interface{}, error) {
 		diagnostics, err := db.Diagnostics(ctx, getQuery(r, "path"))
-		log15.Warn(fmt.Sprintf("MMM: %v - %v\n", diagnostics, err))
 		if err != nil {
 			return nil, pkgerrors.Wrap(err, "db.Diagnostics")
 		}

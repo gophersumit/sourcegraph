@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/sourcegraph/go-lsp"
 	"github.com/sourcegraph/sourcegraph/cmd/frontend/graphqlbackend"
@@ -191,22 +190,23 @@ func (r *lsifQueryResolver) Hover(ctx context.Context, args *graphqlbackend.LSIF
 }
 
 func (r *lsifQueryResolver) Diagnostics(ctx context.Context, args *graphqlbackend.LSIFDiagnosticsArgs) (graphqlbackend.DiagnosticConnectionResolver, error) {
+	// TODO(efritz) - should concatenate/deduplicate diagnostics from all uploads
+
 	for _, upload := range r.uploads {
-		diagnostics, err := r.codeIntelAPI.Diagnostics(
-			ctx,
-			r.path,
-			upload.ID,
-		)
+		// TODO(efritz) - apply limits more intelligently
+		diagnostics, err := r.codeIntelAPI.Diagnostics(ctx, r.path, upload.ID)
 		if err != nil {
 			return nil, err
 		}
 
-		// TODO - need to translate ranges back
-		fmt.Printf("Diagnostics: %v\n", diagnostics)
+		return &diagnosticConnectionResolver{
+			repo:        r.repositoryResolver.Type(),
+			commit:      r.commit,
+			diagnostics: diagnostics,
+		}, nil
 	}
 
-	// TODO(efritz) - implement
-	return nil, fmt.Errorf("Y unimplemented")
+	return nil, nil
 }
 
 // adjustPosition adjusts the position denoted by `line` and `character` in the requested commit into an

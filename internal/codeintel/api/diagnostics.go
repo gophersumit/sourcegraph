@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/inconshreveable/log15"
@@ -13,8 +12,6 @@ import (
 
 // TODO(efritz) - document
 func (api *codeIntelAPI) Diagnostics(ctx context.Context, file string, uploadID int) ([]bundles.Diagnostic, error) {
-	fmt.Printf("IN API\n")
-
 	dump, exists, err := api.db.GetDumpByID(ctx, uploadID)
 	if err != nil {
 		return nil, errors.Wrap(err, "db.GetDumpByID")
@@ -26,10 +23,7 @@ func (api *codeIntelAPI) Diagnostics(ctx context.Context, file string, uploadID 
 	pathInBundle := strings.TrimPrefix(file, dump.Root)
 	bundleClient := api.bundleManagerClient.BundleClient(dump.ID)
 
-	fmt.Printf("PATH IN BUNDLE: %s", pathInBundle)
-
 	diagnostics, err := bundleClient.Diagnostics(ctx, pathInBundle)
-	log15.Warn(fmt.Sprintf("QQQ: %v - %v\n", diagnostics, err))
 	if err != nil {
 		if err == client.ErrNotFound {
 			log15.Warn("Bundle does not exist")

@@ -29,12 +29,6 @@ func TestReadDocumentV5(t *testing.T) {
 		t.Errorf("expected document to exist")
 	}
 
-	// for k, v := range data.Ranges {
-	// 	if v.HoverResultID == types.ID("3463") {
-	// 		fmt.Printf("%s -> %v\n", k, v)
-	// 	}
-	// }
-
 	expectedRange := types.RangeData{
 		StartLine:          140,
 		StartCharacter:     17,

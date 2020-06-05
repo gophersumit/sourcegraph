@@ -35,6 +35,7 @@ type PackageInformationData struct {
 
 // TODO(efritz) - document
 type Diagnostic struct {
+	Path           string `json:"path"`
 	Severity       int    `json:"severity"`
 	Code           string `json:"code"`
 	Message        string `json:"message"`
