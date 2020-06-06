@@ -39,6 +39,7 @@ const campaignFragment = gql`
         createdAt
         updatedAt
         closedAt
+        url
         viewerCanAdminister
         hasUnpublishedPatches
         changesets {

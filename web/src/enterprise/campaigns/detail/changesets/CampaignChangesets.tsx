@@ -37,6 +37,8 @@ interface Props extends ThemeProps, PlatformContextProps, TelemetryProps, Extens
     campaignUpdates: Subject<void>
     changesetUpdates: Subject<void>
 
+    after?: React.ReactFragment
+
     queryChangesets: typeof queryChangesets
 }
 
@@ -66,6 +68,7 @@ export const CampaignChangesets: React.FunctionComponent<Props> = ({
     extensionsController,
     platformContext,
     telemetryService,
+    after,
     queryChangesets,
 }) => {
     const [state, setState] = useState<GQL.ChangesetState | undefined>()
@@ -137,7 +140,7 @@ export const CampaignChangesets: React.FunctionComponent<Props> = ({
     }, [componentRerenders, hoverState])
 
     const changesetFiltersRow = (
-        <div className="form-inline mb-0 mt-2">
+        <div className="form-inline">
             <label htmlFor="changeset-state-filter">State</label>
             <select
                 className="form-control mx-2"
@@ -184,13 +187,15 @@ export const CampaignChangesets: React.FunctionComponent<Props> = ({
                     </option>
                 ))}
             </select>
+            <div className="flex-1" />
+            {after}
         </div>
     )
 
     return (
-        <>
-            {changesetFiltersRow}
-            <div className="list-group position-relative" ref={nextContainerElement}>
+        <div className="card">
+            <div className="card-header">{changesetFiltersRow}</div>
+            <div className="list-group list-group-flush position-relative" ref={nextContainerElement}>
                 <FilteredConnection<GQL.Changeset, Omit<ChangesetNodeProps, 'node'>>
                     className="mt-2"
                     nodeComponent={ChangesetNode}
@@ -224,6 +229,6 @@ export const CampaignChangesets: React.FunctionComponent<Props> = ({
                     />
                 )}
             </div>
-        </>
+        </div>
     )
 }
